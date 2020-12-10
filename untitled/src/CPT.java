@@ -10,5 +10,13 @@ public class CPT {
         this.cpt=cpt;
     }
 
+    public HashMap<HashMap<String, String>, HashMap<String, Double>> getCpt() {
+        return cpt;
+    }
+
+    public void setCpt(HashMap<HashMap<String, String>, HashMap<String, Double>> cpt) {
+        this.cpt = cpt;
+    }
+
 
 }

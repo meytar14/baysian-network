@@ -18,10 +18,7 @@ public class Main
             fr = new FileReader(input);
             br=new BufferedReader(fr);
             String line;
-           /* while((line=br.readLine())!=null)
-            {
-                System.out.println(line);
-            }*/
+
             br.readLine();
             line= br.readLine();
             String line2=line.substring(line.indexOf(":")+2);
@@ -32,8 +29,8 @@ public class Main
                 instances.put(instancesNames[i],new instance(instancesNames[i]));
             }
             br.readLine();
-
-            for(int j=0;j<instances.size();j++)//insert all the date into each instance
+            //////insert all the date into each instance
+            for(int j=0;j<instances.size();j++)
             {
                 line=br.readLine();
                 String var=line.substring(4);
@@ -73,6 +70,7 @@ public class Main
                         String[] e2=e[i].split(",");
                         insideCpthm2.put(e2[0],Double.parseDouble(e2[1]));
                     }
+                    temp.theMissingValue(insideCpthm2);
                     cpthm.put(null,insideCpthm2);
                     CPT cpt=new CPT(cpthm);
                     temp.setCpt(cpt);
@@ -103,17 +101,8 @@ public class Main
                             String[] e2=e[k].split(",");
                             insideCpthm2.put(e2[0],Double.parseDouble(e2[1]));
                         }
+                        temp.theMissingValue(insideCpthm2);
                         cpthm.put(insideCpthm,insideCpthm2);
-                       /* String[] e=line.split(",=");
-                       // double p=Double.parseDouble(e[1]);
-                        String[] parentValues=e[0].split(",");
-                        int count=0;
-                        for(instance parent:temp.getParents().values())
-                        {
-                            insideCpthm.put(parent.getName(),parentValues[count]);
-                            count++;
-                        }
-                        cpthm.put(insideCpthm,p);*/
                     }
                     CPT cpt=new CPT(cpthm);
                     temp.setCpt(cpt);
@@ -121,15 +110,16 @@ public class Main
                 br.readLine();
             }
             br.readLine();
+
+            ////////insert the qeuries
             ArrayList<Querie>queries =new ArrayList<Querie>();
             while((line= br.readLine())!=null)
             {
                 Querie temp=new Querie();
                 line2=line.substring(line.indexOf("(")+1,line.indexOf("|"));
                 String[] e=line2.split("=");
-                HashMap<String,String> p=new HashMap<String,String>();
-                p.put(e[0],e[1]);
-                temp.setP(p);
+                temp.setpName(e[0]);
+                temp.setpValue(e[1]);
                 line2=line.substring(line.indexOf("|")+1,line.indexOf(")"));
                 e=line2.split(",");
                 String[] e2;
@@ -144,6 +134,21 @@ public class Main
                 temp.setAlgorithmNum(Integer.parseInt(algo));
                 queries.add(temp);
             }
+            double[][] res=new double[queries.size()][3];
+            Iterator<Querie> iter= queries.listIterator();
+            Querie temp;
+           for(int i=0;i<res.length;i++)
+            {
+                temp=iter.next();
+                res[i][0]=temp.algo1(instances);
+                res[i][1]=temp.getCounterAdd();
+                res[i][2]=temp.getCounterMul();
+            }
+            for(int i=0;i<res.length;i++)
+            {
+                System.out.println(res[i][0]+","+res[i][1]+","+res[i][2]);
+            }
+
 
 
         }
