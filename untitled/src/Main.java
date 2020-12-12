@@ -134,13 +134,22 @@ public class Main
                 temp.setAlgorithmNum(Integer.parseInt(algo));
                 queries.add(temp);
             }
+           /* HashMap<String,String> evidence=new HashMap<>();
+            evidence.put("M","true");
+            evidence.put("J","true");
+            instances.get("J").factorize("true",evidence);//
+            instances.get("M").factorize("true",evidence);
+            instances.get("A").factorize(null,evidence);
+            Querie tp=new Querie();
+            HashMap<HashMap<String,String>,Double> join=tp.join(instances.get("J").getFactor(),instances.get("M").getFactor(),instances);//
+            join=tp.join(join,instances.get("A").getFactor(),instances);*/
             double[][] res=new double[queries.size()][3];
             Iterator<Querie> iter= queries.listIterator();
             Querie temp;
            for(int i=0;i<res.length;i++)
             {
                 temp=iter.next();
-                res[i][0]=temp.algo1(instances);
+                res[i][0]=temp.algo2(instances);
                 res[i][1]=temp.getCounterAdd();
                 res[i][2]=temp.getCounterMul();
             }

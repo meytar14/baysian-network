@@ -9,11 +9,20 @@ public class instance
     private String[] values;
     private HashMap<String,instance> parents;
     private CPT cpt;
+    private HashMap<HashMap<String,String>,Double> factor;
 
 
     public instance(String name)
     {
         this.name=name;
+    }
+
+    public HashMap<HashMap<String, String>, Double> getFactor() {
+        return factor;
+    }
+
+    public void setFactor(HashMap<HashMap<String, String>, Double> factor) {
+        this.factor = factor;
     }
 
     public CPT getCpt() {
@@ -58,6 +67,21 @@ public class instance
             if()
         }
     }*/
+    public boolean containsParantsVal(HashMap<String,String> hm,HashMap<String,String>parentsEvidence)
+    {
+        if(parentsEvidence.isEmpty())
+            return true;
+        boolean b=true;
+        for(String parentName:parentsEvidence.keySet())
+        {
+           if(!hm.get(parentName).equalsIgnoreCase(parentsEvidence.get(parentName)))
+           {
+               b=false;
+               break;
+           }
+        }
+        return b;
+    }
     public void theMissingValue(HashMap<String,Double> hm)
     {
         String missingValue="";
@@ -76,6 +100,75 @@ public class instance
         }
         hm.put(missingValue,1-sum);
     }
+    public void factorize(String instanceVal,HashMap<String,String> evidence)
+    {
+        HashMap<HashMap<String,String>,HashMap<String,Double>> cpt=getCpt().getCpt();
+        HashMap<HashMap<String,String>,Double> factor=new HashMap<HashMap<String,String>,Double>();
+        if(parents==null)
+        {
+            if(instanceVal!=null)
+            {
+                setFactor(null);
+                return;
+            }
+            else {
+                for (String val : values) {
+                    HashMap<String, String> temp = new HashMap<String, String>();
+                    temp.put(name, val);
+                    factor.put(temp, cpt.get(null).get(val));
+                }
+            }
+        }
+        else if(instanceVal!=null) {
+            HashMap<String,String>parentsEvidence=new HashMap<>();
+            for(String parant:parents.keySet())
+            {
+                if(evidence.containsKey(parant))
+                {
+                    parentsEvidence.put(parant,evidence.get(parant));
+                }
+            }
+            for (HashMap<String, String> hm : cpt.keySet()) {
+                    HashMap<String, String> temp = new HashMap<String, String>();
+                    temp.putAll(hm);
+                    if (containsParantsVal(temp, parentsEvidence)) {
+                        for(String parent:parentsEvidence.keySet())//
+                        {
+                            temp.remove(parent);
+                        }//
+                        factor.put(temp, cpt.get(hm).get(instanceVal));
+                }
+            }
+        }
+        else
+        {
+            HashMap<String,String>parentsEvidence=new HashMap<>();
+            for(String parant:parents.keySet())
+            {
+                if(evidence.containsKey(parant))
+                {
+                    parentsEvidence.put(parant,evidence.get(parant));
+                }
+            }
+            for (HashMap<String, String> hm : cpt.keySet()) {
+                for(String val:values)
+                {
+                    HashMap<String,String>temp=new HashMap<String, String>();
+                    temp.putAll(hm);
+                    temp.put(name,val);
+                    if(containsParantsVal(temp,parentsEvidence)) {
+                        for(String parent:parentsEvidence.keySet())//
+                        {
+                            temp.remove(parent);
+                        }//
+                        factor.put(temp, cpt.get(hm).get(val));
+                    }
+                }
+            }
+        }
+        setFactor(factor);
+    }
+
     public double p(HashMap<String,String> combination)
     {
         String thisValue=combination.get(name);
