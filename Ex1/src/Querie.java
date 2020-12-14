@@ -77,6 +77,20 @@ public class Querie
         this.evidence = evidence;
     }
 
+    public double algo(HashMap<String,instance> instances)
+    {
+        switch (algorithmNum)
+        {
+            case 1:
+                return algo1(instances);
+            case 2:
+                return algo2(instances);
+            case 3:
+                return algo3(instances);
+            default:
+                return algo1(instances);
+        }
+    }
     public LinkedList<HashMap<String,String>> allCombinations(LinkedList<instance> notEvidence ,LinkedList<HashMap<String,String>> res)//returns all the combinations of the different values of "not evidence" with the values of res.
     {
         if(notEvidence.isEmpty())
@@ -225,6 +239,7 @@ public class Querie
 
     public HashMap<HashMap<String,String>,Double> eliminate(HashMap<HashMap<String,String>,Double> f,String name)
     {
+        int counterAdd=0;
         HashMap<HashMap<String,String>,Double> newf=new HashMap<HashMap<String,String>,Double>();
         for(HashMap<String,String> hm:f.keySet())
         {
@@ -235,16 +250,19 @@ public class Querie
             if(newf.containsKey(temp))
             {
                 newf.replace(temp,newf.get(temp)+v);
+                counterAdd++;
             }
             else
             {
                 newf.put(temp,v);
             }
         }
+        setCounterAdd(getCounterAdd()+counterAdd);
         return newf;
     }
     public HashMap<HashMap<String,String>,Double> join(HashMap<HashMap<String,String>,Double> a,HashMap<HashMap<String,String>,Double> b,HashMap<String,instance> instances)
     {
+        int counterMul=0;
         LinkedList<instance> bothInstances=new LinkedList<>();
         HashSet<instance> bothInstancesSet=new HashSet<>();
         Iterator<HashMap<String,String>> iter=a.keySet().iterator();
@@ -273,7 +291,9 @@ public class Querie
         for(HashMap<String,String> combination:combinations)
         {
             join.put(combination,pFactor(a,combination)*pFactor(b,combination));
+            counterMul++;
         }
+        setCounterMul(getCounterMul()+counterMul);
         return join;
     }
     public double algo2(HashMap<String,instance> instances)
@@ -288,15 +308,19 @@ public class Querie
         HashMap<String,String> evidence2=new HashMap<String, String>();
         evidence2.putAll(evidence);
         evidence2.put(pName,pValue);
-        LinkedList<instance> notEvidence=new LinkedList<instance>();
+       // LinkedList<instance> notEvidence=new LinkedList<instance>();
+        ArrayList<String>notEvidenceNames=new ArrayList<>();
+
 
         for(instance i:instances.values())
         {
             if(!evidence2.containsKey(i.getName()))
             {
-                    notEvidence.add(i);
+                   // notEvidence.add(i);
+                    notEvidenceNames.add(i.getName());
             }
         }
+        notEvidenceNames.sort(Comparator.naturalOrder());//sorting this array by alphabet order
         HashMap<String,HashMap<HashMap<String,String>,Double>> factors=new HashMap<String,HashMap<HashMap<String,String>,Double>>();
         for(instance i:instances.values())//factorize all the instances
         {
@@ -315,35 +339,37 @@ public class Querie
             }
         }
 
-        while (!notEvidence.isEmpty())
-        {
-            instance temp=notEvidence.poll();
-            LinkedList<HashMap<HashMap<String,String>,Double>> factorsWithTemp=new LinkedList<>();//list of all the factors that contains temp
-            LinkedList<String>factorsWithTempNames=new LinkedList<>();
-            for(String factor:factors.keySet())//isert to "factorsWithTemp" from factors that contains temp
+
+        //while (!notEvidence.isEmpty())
+        //{
+        for(int i=0;i<notEvidenceNames.size();i++) {
+            //instance temp = notEvidence.poll();
+            instance temp =instances.get(notEvidenceNames.get(i));
+            LinkedList<HashMap<HashMap<String, String>, Double>> factorsWithTemp = new LinkedList<>();//list of all the factors that contains temp
+            LinkedList<String> factorsWithTempNames = new LinkedList<>();
+            for (String factor : factors.keySet())//isert to "factorsWithTemp" from factors that contains temp
             {
-                Iterator<HashMap<String,String>> iter=factors.get(factor).keySet().iterator();
-                HashMap<String,String> hm=iter.next();
-                if(hm.keySet().contains(temp.getName()))
-                {
-                        factorsWithTemp.add(factors.get(factor));
-                        factorsWithTempNames.add(factor);
+                Iterator<HashMap<String, String>> iter = factors.get(factor).keySet().iterator();
+                HashMap<String, String> hm = iter.next();
+                if (hm.keySet().contains(temp.getName())) {
+                    factorsWithTemp.add(factors.get(factor));
+                    factorsWithTempNames.add(factor);
                 }
             }
-            while(!factorsWithTempNames.isEmpty())//remove the factors that we isert to "factorsWithTemp" from "factors"
+            while (!factorsWithTempNames.isEmpty())//remove the factors that we isert to "factorsWithTemp" from "factors"
             {
-                String n=factorsWithTempNames.poll();
+                String n = factorsWithTempNames.poll();
                 factors.remove(n);
             }
-            HashMap<HashMap<String,String>,Double> joinedFactor=factorsWithTemp.poll();
-            HashMap<HashMap<String,String>,Double> f;
-            while (!factorsWithTemp.isEmpty())
-            {
-                f=factorsWithTemp.poll();
-                joinedFactor=join(joinedFactor,f,instances);
+            HashMap<HashMap<String, String>, Double> joinedFactor = factorsWithTemp.poll();
+            HashMap<HashMap<String, String>, Double> f;
+            while (!factorsWithTemp.isEmpty()) {
+                f = factorsWithTemp.poll();
+                joinedFactor = join(joinedFactor, f, instances);
             }
-            factors.put(temp.getName(),eliminate(joinedFactor, temp.getName()));
+            factors.put(temp.getName(), eliminate(joinedFactor, temp.getName()));
         }
+        //}
         LinkedList<HashMap<HashMap<String,String>,Double>> lastFactors=new LinkedList<>();
         for(HashMap<HashMap<String,String>,Double> f:factors.values())
         {
@@ -372,6 +398,115 @@ public class Querie
         return res;
     }
 
+    public double algo3(HashMap<String,instance> instances)
+    {
+        if(instances.get(pName).getCpt().getCpt().containsKey(evidence))
+        {
+            double res=instances.get(pName).getCpt().getCpt().get(evidence).get(pValue);
+            int IntRes=(int)(res*100000);
+            res=IntRes/100000.0;
+            return res;
+        }
+        HashMap<String,String> evidence2=new HashMap<String, String>();
+        evidence2.putAll(evidence);
+        evidence2.put(pName,pValue);
+        // LinkedList<instance> notEvidence=new LinkedList<instance>();
+        ArrayList<String>notEvidenceNames=new ArrayList<>();
+
+
+        for(instance i:instances.values())
+        {
+            if(!evidence2.containsKey(i.getName()))
+            {
+                // notEvidence.add(i);
+                notEvidenceNames.add(i.getName());
+            }
+        }
+        //notEvidenceNames.sort(Comparator.naturalOrder());//sorting this array by alphabet order
+
+        HashMap<String,HashMap<HashMap<String,String>,Double>> factors=new HashMap<String,HashMap<HashMap<String,String>,Double>>();
+        for(instance i:instances.values())//factorize all the instances
+        {
+            if (evidence.containsKey(i.getName()))
+            {
+                i.factorize(evidence.get(i.getName()),evidence);
+                if(i.getFactor()!=null) {
+                    factors.put(i.getName(), i.getFactor());
+                }
+            }
+            else {
+                i.factorize(null,evidence);
+                if(i.getFactor()!=null) {
+                    factors.put(i.getName(), i.getFactor());
+                }
+            }
+        }
+
+        Collections.sort(notEvidenceNames, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int x=Integer.valueOf(factors.get(o1).size()).compareTo(factors.get(o2).size());
+                return -x;
+            }
+        });
+
+        //while (!notEvidence.isEmpty())
+        //{
+        for(int i=0;i<notEvidenceNames.size();i++) {
+            //instance temp = notEvidence.poll();
+            instance temp =instances.get(notEvidenceNames.get(i));
+            LinkedList<HashMap<HashMap<String, String>, Double>> factorsWithTemp = new LinkedList<>();//list of all the factors that contains temp
+            LinkedList<String> factorsWithTempNames = new LinkedList<>();
+            for (String factor : factors.keySet())//isert to "factorsWithTemp" from factors that contains temp
+            {
+                Iterator<HashMap<String, String>> iter = factors.get(factor).keySet().iterator();
+                HashMap<String, String> hm = iter.next();
+                if (hm.keySet().contains(temp.getName())) {
+                    factorsWithTemp.add(factors.get(factor));
+                    factorsWithTempNames.add(factor);
+                }
+            }
+            while (!factorsWithTempNames.isEmpty())//remove the factors that we isert to "factorsWithTemp" from "factors"
+            {
+                String n = factorsWithTempNames.poll();
+                factors.remove(n);
+            }
+            HashMap<HashMap<String, String>, Double> joinedFactor = factorsWithTemp.poll();
+            HashMap<HashMap<String, String>, Double> f;
+            while (!factorsWithTemp.isEmpty()) {
+                f = factorsWithTemp.poll();
+                joinedFactor = join(joinedFactor, f, instances);
+            }
+            factors.put(temp.getName(), eliminate(joinedFactor, temp.getName()));
+        }
+        //}
+        LinkedList<HashMap<HashMap<String,String>,Double>> lastFactors=new LinkedList<>();
+        for(HashMap<HashMap<String,String>,Double> f:factors.values())
+        {
+            lastFactors.add(f);
+        }
+        HashMap<HashMap<String,String>,Double>joinedFactor2=lastFactors.poll();
+        HashMap<HashMap<String,String>,Double> f;
+        while (!lastFactors.isEmpty())
+        {
+            f=lastFactors.poll();
+            joinedFactor2=join(joinedFactor2,f,instances);
+        }
+        //Iterator<HashMap<HashMap<String,String>,Double>>it=factors.values().iterator();
+        //HashMap<HashMap<String,String>,Double>finalFactor=it.next();
+        HashMap<String,String> queryInstance=new HashMap<>();
+        queryInstance.put(pName,pValue);
+        double pVal=joinedFactor2.get(queryInstance);
+        double pval_And_pNotVal=0;
+        for(double v:joinedFactor2.values())
+        {
+            pval_And_pNotVal=pval_And_pNotVal+v;
+        }
+        double res=pVal/pval_And_pNotVal;
+        int IntRes=(int)(res*100000);
+        res=IntRes/100000.0;
+        return res;
+    }
 
 
 }

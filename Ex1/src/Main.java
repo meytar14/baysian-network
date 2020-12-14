@@ -1,8 +1,5 @@
 import javax.swing.text.html.HTMLDocument;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,7 +11,7 @@ public class Main
         BufferedReader br;
         FileReader fr;
         try {
-            File input = new File("C:\\Users\\meyta\\IdeaProjects\\baysian-network\\untitled\\src\\input1.txt");
+            File input = new File("C:\\Users\\meyta\\IdeaProjects\\baysian-network\\Ex1\\src\\input1.txt");
             fr = new FileReader(input);
             br=new BufferedReader(fr);
             String line;
@@ -134,32 +131,25 @@ public class Main
                 temp.setAlgorithmNum(Integer.parseInt(algo));
                 queries.add(temp);
             }
-           /* HashMap<String,String> evidence=new HashMap<>();
-            evidence.put("M","true");
-            evidence.put("J","true");
-            instances.get("J").factorize("true",evidence);//
-            instances.get("M").factorize("true",evidence);
-            instances.get("A").factorize(null,evidence);
-            Querie tp=new Querie();
-            HashMap<HashMap<String,String>,Double> join=tp.join(instances.get("J").getFactor(),instances.get("M").getFactor(),instances);//
-            join=tp.join(join,instances.get("A").getFactor(),instances);*/
+
+            File file=new File("output.txt");//make a new output file
+            FileWriter fw=new FileWriter(file);
+            PrintWriter pw=new PrintWriter(fw);
             double[][] res=new double[queries.size()][3];
             Iterator<Querie> iter= queries.listIterator();
             Querie temp;
            for(int i=0;i<res.length;i++)
             {
                 temp=iter.next();
-                res[i][0]=temp.algo2(instances);
+                res[i][0]=temp.algo(instances);
                 res[i][1]=temp.getCounterAdd();
                 res[i][2]=temp.getCounterMul();
             }
             for(int i=0;i<res.length;i++)
             {
-                System.out.println(res[i][0]+","+res[i][1]+","+res[i][2]);
+                pw.println(res[i][0]+","+res[i][1]+","+res[i][2]);
             }
-
-
-
+            pw.close();
         }
         catch (IOException e)
         {
